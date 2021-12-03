@@ -36,17 +36,15 @@ class Solution
 
   def calculate_gamma_rate_binary!
     self.gamma_rate_binary =
-      reports       #=> ['101', '100', ...]
-        .reduce([0] * reports.first.size) do |rate, figure|
-          rate         #=> [0, 0, 0, ...]
-            .map.with_index do |x, idx|
-              figure[idx] == '1' ? x + 1 : x
-            end        #=> [1, 0, 1, ...]
-        end         #=> [2, 0, 1]
-        .map do |count|
-          (count >= reports.size / 2) ? 1 : 0
-        end         #=> [1, 0, 0]
-        .join       #=> '100'
+      reports         #=> ['101', '100', ...]
+        .map(&:chars) #=> [['1', '0', '1'], ['1', '0', '0'], ...]
+        .transpose    #=> [['1', '1', ...], ['0', '0', ...], ['1', '0', ...]]
+        .map(&:tally) #=> [{'1' => 2, '0' => 0}, {'0' => 2, '1' => 0}, {'1' => 1, '0' => 1}]
+        .map do |x|
+          x.max_by{ |char, count| count}
+        end           #=> [['1', 2], ['0', 2], ['1', 1]]
+        .map(&:first) #=> ['1','0','1']
+        .join         #=> '101'
   end
 
   def calculate_epsilon_rate_binary!
