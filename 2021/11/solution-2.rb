@@ -17,17 +17,18 @@ class Solution
     reset_simulation!
     # display_state("Initial State")
     steps.times do |x|
-      raise_energy!
-      flash!
+      step!(x)
       # display_state(x)
     end
     octopus_grid
   end
 
   def result
+    reset_simulation!
     pass = 0
-    until simulate(steps: pass).sum { |row| row.sum }.zero? do
+    until octopus_grid.sum { |row| row.sum }.zero? do
       pass += 1
+      step!(pass)
     end
     pass
   end
@@ -36,6 +37,11 @@ class Solution
 
   attr_reader :octopus_grid_initial_state
   attr_accessor :flash_count, :octopus_grid
+
+  def step!(x)
+    raise_energy!
+    flash!
+  end
 
   def raise_energy!
     self.octopus_grid = self.octopus_grid.map { |row| row.map { |octopus_energy| octopus_energy + 1 } }
