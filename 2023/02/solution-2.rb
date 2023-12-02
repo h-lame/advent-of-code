@@ -5,10 +5,15 @@ class Solution
     end
 
     def self.get_cubes(cube_string)
-      blue = (cube_string.match(/(\d+) blue/) || [nil, 0])[1].to_i
-      red = (cube_string.match(/(\d+) red/) || [nil, 0])[1].to_i
-      green = (cube_string.match(/(\d+) green/) || [nil, 0])[1].to_i
-      {blue: blue, red: red, green: green}
+      {blue: 0, red: 0, green: 0}
+        .update(
+          Hash[
+            cube_string.scan(/(?:(\d+) (blue|red|green)(?:,\s+)?)/) # [['1', 'blue'], ...]
+            .map(&:rotate) # [['blue', '1'], ...]
+          ] # 'blue' => '0', ...
+            .transform_keys(&:to_sym) # :blue => '0', ...
+            .transform_values(&:to_i) # :blue => 0, ...
+        )
     end
   end
 
