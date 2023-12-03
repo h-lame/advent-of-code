@@ -5,6 +5,63 @@ class Solution
     end
   end
 
+  Symbol = Data.define(:symbol, :position) do
+    attr_reader :x, :y
+    def initialize(symbol:, position:)
+      @x = position[0]
+      @y = position[1]
+      @gear = (symbol == '*')
+      super
+    end
+
+    def gear?
+      @gear
+    end
+
+    def adjacent_to_number?(number)
+      number.range[0].cover?(x) && number.range[1].cover?(y)
+    end
+
+    def ==(other)
+      case other
+      in Symbol
+        super
+      in [String => other_symbol, [Integer, Integer] => other_position]
+        (symbol == other_symbol) && (position == other_position)
+      else
+        false
+      end
+    end
+  end
+
+  Number = Data.define(:number, :start_position, :finish_position) do
+    attr_reader :start_x, :start_y, :finish_x, :finish_y, :range
+
+    def initialize(number:, start_position:, finish_position:)
+      @start_x = start_position[0]
+      @start_y = start_position[1]
+      @finish_x = finish_position[0]
+      @finish_y = finish_position[1]
+      @range = [@start_x-1..@finish_x+1, @start_y-1..@finish_y+1]
+      super
+    end
+
+    def to_i
+      number.to_i
+    end
+
+    def ==(other)
+      case other
+      in Number
+        super
+      in [String => other_number, [Integer, Integer] => other_start_position, [Integer, Integer] => other_finish_position]
+        (number == other_number) && (start_position == other_start_position) && (finish_position == other_finish_position)
+      else
+        false
+      end
+    end
+  end
+
   def initialize(schematic)
     @schematic = schematic
   end
@@ -19,7 +76,7 @@ class Solution
     @symbols = []
     schematic.each.with_index do |rows, y|
       rows.each_char.with_index do |cell, x|
-        @symbols << [cell, [x, y]] unless cell.match? /\.|\d/
+        @symbols << Symbol.new(symbol: cell, position: [x, y]) unless cell.match? /\.|\d/
       end
     end
     @symbols
@@ -28,7 +85,7 @@ class Solution
   def potential_gears
     return @potential_gears if defined? @potential_gears
 
-    @potential_gears = symbols.select { |s| s[0] == '*' }
+    @potential_gears = symbols.select(&:gear?)
   end
 
   def gears
@@ -37,10 +94,10 @@ class Solution
     @gears = []
     potential_gears.each do |potential_gear|
       gear_parts = numbers.select do |number|
-        symbol_adjacent_to_number?(range_for_number(number), potential_gear.last)
+        potential_gear.adjacent_to_number? number
       end
 
-      @gears << gear_parts.map(&:first) if gear_parts.size == 2
+      @gears << gear_parts.map(&:number) if gear_parts.size == 2
     end
     @gears
   end
@@ -51,10 +108,10 @@ class Solution
     @gears2 = []
     potential_gears.each do |potential_gear|
       gear_parts = potential_gear_parts.select do |number|
-        symbol_adjacent_to_number?(range_for_number(number), potential_gear.last)
+        potential_gear.adjacent_to_number? number
       end
 
-      @gears2 << gear_parts.map(&:first) if gear_parts.size == 2
+      @gears2 << gear_parts.map(&:number) if gear_parts.size == 2
     end
     @gears2
   end
@@ -81,16 +138,15 @@ class Solution
         end
       end
     end
-    @numbers
+    @numbers.map! { |number| n, start, finish = *number; Number.new(number: n, start_position: start, finish_position: finish) }
   end
 
   def parts
     return @parts if defined? @parts
 
     @parts = numbers.select do |n|
-      range = range_for_number(n)
       symbols.detect do |s|
-        symbol_adjacent_to_number?(range, s.last)
+        s.adjacent_to_number? n
       end
     end
   end
@@ -99,24 +155,13 @@ class Solution
     return @potential_gear_parts if defined? @potential_gear_parts
 
     @potential_gear_parts = numbers.select do |n|
-      range = range_for_number(n)
       potential_gears.detect do |pg|
-        symbol_adjacent_to_number?(range, pg.last)
+        pg.adjacent_to_number? n
       end
     end
   end
 
   private
-
-  def range_for_number(number)
-    _, start, finish = *number
-    [start[0]-1..finish[0]+1, start[1]-1..finish[1]+1]
-  end
-
-  def symbol_adjacent_to_number?(number_range, symbol_position)
-    x, y = *symbol_position
-    number_range[0].cover?(x) && number_range[1].cover?(y)
-  end
 
   attr_reader :schematic
 
