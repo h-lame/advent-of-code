@@ -10,7 +10,7 @@ class Solution
   end
 
   def result
-    gears.sum { |g| g[0].to_i * g[1].to_i }
+    gears2.sum { |g| g[0].to_i * g[1].to_i }
   end
 
   def symbols
@@ -43,6 +43,20 @@ class Solution
       @gears << gear_parts.map(&:first) if gear_parts.size == 2
     end
     @gears
+  end
+
+  def gears2
+    return @gears2 if defined? @gears2
+
+    @gears2 = []
+    potential_gears.each do |potential_gear|
+      gear_parts = potential_gear_parts.select do |number|
+        symbol_adjacent_to_number?(range_for_number(number), potential_gear.last)
+      end
+
+      @gears2 << gear_parts.map(&:first) if gear_parts.size == 2
+    end
+    @gears2
   end
 
   def numbers
@@ -81,6 +95,17 @@ class Solution
     end
   end
 
+  def potential_gear_parts
+    return @potential_gear_parts if defined? @potential_gear_parts
+
+    @potential_gear_parts = numbers.select do |n|
+      range = range_for_number(n)
+      potential_gears.detect do |pg|
+        symbol_adjacent_to_number?(range, pg.last)
+      end
+    end
+  end
+
   private
 
   def range_for_number(number)
@@ -99,4 +124,12 @@ end
 
 if __FILE__ == $0
   puts Solution.new(Solution::Normalizer.do_it(ARGV[0])).result
+  require 'benchmark'
+
+  n = 10
+  Benchmark.bmbm do |x|
+    x.report("gears-numbers") { n.times { Solution.new(Solution::Normalizer.do_it(ARGV[0])).gears } }
+    x.report("gears-parts") { n.times { Solution.new(Solution::Normalizer.do_it(ARGV[0])).gears2 } }
+  end
+
 end
