@@ -36,11 +36,8 @@ class Solution
 
     @gears = []
     potential_gears.each do |potential_gear|
-      _, (x, y) = *potential_gear
       gear_parts = numbers.select do |number|
-        _n, start, finish = *number
-        range = [start[0]-1..finish[0]+1, start[1]-1..finish[1]+1]
-        range[0].cover?(x) && range[1].cover?(y)
+        symbol_adjacent_to_number?(range_for_number(number), potential_gear.last)
       end
 
       @gears << gear_parts.map(&:first) if gear_parts.size == 2
@@ -75,16 +72,24 @@ class Solution
 
   def parts
     numbers.select do |n|
-      number, start, finish = *n
-      range = [start[0]-1..finish[0]+1, start[1]-1..finish[1]+1]
+      range = range_for_number(n)
       symbols.detect do |s|
-        _symbol, (x, y) = *s
-        range[0].cover?(x) && range[1].cover?(y)
+        symbol_adjacent_to_number?(range, s.last)
       end
     end.map { |n| n.first }
   end
 
   private
+
+  def range_for_number(number)
+    _, start, finish = *number
+    [start[0]-1..finish[0]+1, start[1]-1..finish[1]+1]
+  end
+
+  def symbol_adjacent_to_number?(number_range, symbol_position)
+    x, y = *symbol_position
+    number_range[0].cover?(x) && number_range[1].cover?(y)
+  end
 
   attr_reader :schematic
 
