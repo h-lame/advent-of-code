@@ -1,6 +1,6 @@
 require File.join(__dir__, 'solution-2')
 
-RSpec.describe Solution do
+RSpec.describe Solution2 do
   let(:raw_schematic) { [
     '467..114..',
     '...*......',
@@ -14,7 +14,7 @@ RSpec.describe Solution do
     '.664.598..',
   ] }
 
-  describe Solution::Normalizer do
+  describe Solution2::Normalizer do
     it 'converts a file into an array of strings, one per line' do
       expect(described_class.do_it File.join(__dir__,'example.txt')).to eq raw_schematic
     end

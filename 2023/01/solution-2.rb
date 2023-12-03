@@ -1,4 +1,4 @@
-class Solution
+class Solution2
   class Normalizer
     def self.do_it(file_name)
       File.readlines(file_name).map &:chomp
@@ -31,5 +31,5 @@ class Solution
 end
 
 if __FILE__ == $0
-  puts Solution.new(Solution::Normalizer.do_it(ARGV[0])).result
+  puts Solution2.new(Solution2::Normalizer.do_it(ARGV[0])).result
 end

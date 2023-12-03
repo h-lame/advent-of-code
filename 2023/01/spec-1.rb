@@ -1,10 +1,10 @@
 require File.join(__dir__, 'solution-1')
 
-RSpec.describe Solution do
+RSpec.describe Solution1 do
   let(:raw_calibrations) { %w[1abc2 pqr3stu8vwx a1b2c3d4e5f treb7uchet] }
   let(:prepared_calibrations) { [12, 38, 15, 77] }
 
-  describe Solution::Normalizer do
+  describe Solution1::Normalizer do
     it 'converts a file into an array of strings' do
       expect(described_class.do_it File.join(__dir__,'example-1.txt')).to eq raw_calibrations
     end
