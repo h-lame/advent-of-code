@@ -57,62 +57,63 @@ RSpec.describe Solution do
   end
 
   it 'extracts a part if there is a symbol adjecent to it' do
+    part = ['1', [1,1], [1,1]]
     expect(
       described_class.new([
         '...',
         '.1.',
         '..*'
       ]).parts
-    ).to eq ['1']
+    ).to eq [part]
     expect(
       described_class.new([
         '...',
         '.1.',
         '.*.'
       ]).parts
-    ).to eq ['1']
+    ).to eq [part]
     expect(
       described_class.new([
         '...',
         '.1.',
         '*..'
       ]).parts
-    ).to eq ['1']
+    ).to eq [part]
     expect(
       described_class.new([
         '...',
         '*1.',
         '...'
       ]).parts
-    ).to eq ['1']
+    ).to eq [part]
     expect(
       described_class.new([
         '...',
         '.1*',
         '...'
       ]).parts
-    ).to eq ['1']
+    ).to eq [part]
     expect(
       described_class.new([
         '..*',
         '.1.',
         '...'
       ]).parts
-    ).to eq ['1']
+    ).to eq [part]
     expect(
       described_class.new([
         '.*.',
         '.1.',
         '...'
       ]).parts
-    ).to eq ['1']
+    ).to eq [part]
     expect(
       described_class.new([
         '*..',
         '.1.',
         '...'
       ]).parts
-    ).to eq ['1']
+    ).to eq [part]
   end
 
   it 'extracts a gear if it is a * symbol adjacent to two numbers' do

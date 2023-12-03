@@ -71,12 +71,14 @@ class Solution
   end
 
   def parts
-    numbers.select do |n|
+    return @parts if defined? @parts
+
+    @parts = numbers.select do |n|
       range = range_for_number(n)
       symbols.detect do |s|
         symbol_adjacent_to_number?(range, s.last)
       end
-    end.map { |n| n.first }
+    end
   end
 
   private
