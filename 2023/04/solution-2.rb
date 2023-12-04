@@ -40,14 +40,12 @@ class Solution2
   end
 
   def result
-    to_see = prepared_cards.map &:id
-    total = 0
-    while to_see.any?
-      card_id = to_see.shift
-      total += 1
-      to_see += prepared_cards[card_id-1].prizes
+    counts = Hash[prepared_cards.map { |x| [x.id, 1] }]
+    prepared_cards.each do |card|
+      multiplier = counts[card.id]
+      card.prizes.each { |p| counts[p] += multiplier }
     end
-    total
+    counts.values.sum
   end
 
   def prepared_cards
