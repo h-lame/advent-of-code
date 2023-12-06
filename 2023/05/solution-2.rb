@@ -1,3 +1,5 @@
+require 'parallel'
+
 class Solution2
   class Normalizer
     def self.do_it(file_name)
@@ -35,17 +37,7 @@ class Solution2
       mappings = almanac_entry.map do |map_str|
         destination, source, size = *map_str.scan(/\d+/).map(&:to_i)
         [(source..source+size-1), destination - source]
-        #size.times.map { |i| [source + i, destination + i] }
-      end#.flatten(1)
-      # mappings_func = -> (x) do
-      #   mapping = mapping_procs.detect { |mapping| mapping.first.cover? x }
-      #   if mapping
-      #     mapping.last + x
-      #   else
-      #     x
-      #   end
-      # end
-      # [key, mappings_func]
+      end
       [key, mappings]
     end
 
@@ -61,15 +53,9 @@ class Solution2
           merged += all
           range = last
         end
-        # puts "splitting #{r} into #{range}, got #{z}, merged now: #{merged}, range now: #{range}"
       end
       merged << range
       merged.tap { |r| r.sort_by! { |x| x.first.begin } }
-      # ranges.map do |r|
-      #   z = split_ranges(r, range)
-      #   puts "splitting #{r} into #{range}, got #{z}"
-      #   z
-      # end.flatten(1).tap(&:uniq!).tap { |r| r.sort_by! { |x| x.first.begin } }
     end
 
     def self.split_ranges(range_1_and_mod, range_2_and_mod)
@@ -131,14 +117,9 @@ class Solution2
         _key, mappings = *map
         mappings.sort_by! { |m| m.first.begin }
         m = mappings.reduce(merged) do |merged, mapping|
-          o = self.class.merge_range_into(mapping, merged)
-          # puts "merging #{mapping} into #{merged}, got #{o}"
-          o
+          self.class.merge_range_into(mapping, merged)
         end
-        # puts "end state = #{m}"
-        m = m.tap(&:uniq!)#.tap { |r| r.sort_by! { |x| x.first.begin } }
-        # puts "and flattedn + uniqued: #{m}"
-        m
+        m.tap(&:uniq!)
       end
       super
     end
@@ -155,18 +136,28 @@ class Solution2
       end
     end
 
+    def location_for_broken(seed)
+      (ranges.detect do |(range, _change)|
+        range.cover? seed
+      end&.last || 0) + seed
+    end
+
     def path_to(key, seed:)
       path, _ = *PATH.slice_after { |p| p == key }
       at = seed
       Hash[path.each_with_object({}) do |step, route|
-        route[step.to_sym] = at = maps[step].(at)
+        route[step.to_sym] = at = (maps[step].detect do |(range, change)|
+          range.cover? at
+        end&.last || 0) + at
       end]
     end
 
     def location_for(seed)
-      (ranges.detect do |(range, _change)|
-        range.cover? seed
-      end&.last || 0) + seed
+      PATH.inject(seed) do |at, step|
+        (maps[step].detect do |(range, change)|
+          range.cover? at
+        end&.last || 0) + at
+      end
     end
   end
 
@@ -176,15 +167,15 @@ class Solution2
 
   def result
     smallest = nil
-    iters = 0
     puts "Seed count: #{prepared_almanac.seed_count}"
-    prepared_almanac.each_seed do |seed|
-      print '.' if (iters % 10_000) == 0
-      iters+=1
-      loc = prepared_almanac.location_for(seed)
-      smallest = loc if smallest.nil? || smallest >= loc
-    end
-    smallest
+    Parallel.map(prepared_almanac.seeds, progress: 'x', in_processes: 8) do |seed_generator|
+      smallest = nil
+      seed_generator.each do |seed|
+        loc = prepared_almanac.location_for(seed)
+        smallest = loc if smallest.nil? || smallest >= loc
+      end
+      smallest
+    end.min
   end
 
   def prepared_almanac
