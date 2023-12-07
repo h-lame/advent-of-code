@@ -50,27 +50,16 @@ class Solution2
         # full house options
         # - 2 J - five of a kind - match the 3
         # - 3 J - five of a kind - match the pair
-        case sorted_cards.count 'J'
-        when 3 then self.class::FIVE_OF_A_KIND
-        when 2 then self.class::FIVE_OF_A_KIND
-        else
-          raise "oh no - full house with #{sorted_cards.count 'J'}s - unexpected #{cards}"
-        end
+        self.class::FIVE_OF_A_KIND
       when self.class::THREE_OF_A_KIND
         # three of a kind options
         # - 1 J - four of a kind - add to the 3
-        # - 2 J - nt possible - would be full house
         # - 3 J - four of a kind - add one of the other cards
-        case sorted_cards.count 'J'
-        when 3 then self.class::FOUR_OF_A_KIND
-        when 1 then self.class::FOUR_OF_A_KIND
-        else
-          raise "oh no - three of a kind with #{sorted_cards.count 'J'}s - unexpected #{cards}"
-        end
+        self.class::FOUR_OF_A_KIND
       when self.class::TWO_PAIR
         # two pair options:
-        #  - 1 J between the pairs - convert to full house
-        #  - 2 Js (it's one of the pairs) - conver to four of a kind
+        #  - 1 J between the pairs - convert to full house by adding to one pair
+        #  - 2 Js (it's one of the pairs) - convert to four of a kind w/ other pair
         case sorted_cards.count 'J'
         when 2 then self.class::FOUR_OF_A_KIND
         when 1 then self.class::FULL_HOUSE
@@ -78,16 +67,13 @@ class Solution2
           raise "oh no - two pair with #{sorted_cards.count 'J'}s - unexpected #{cards}"
         end
       when self.class::ONE_PAIR
-        # one PAIR means I can have 1 or 2 Js (the Js are the pair)
-        # all I can do is THREE_OF_A_KIND - add 1 J to a pair or add one card to a pair of Js
-        case sorted_cards.count 'J'
-        when 2 then self.class::THREE_OF_A_KIND
-        when 1 then self.class::THREE_OF_A_KIND
-        else
-          raise "oh no - one pair with #{sorted_cards.count 'J'}s - unexpected #{cards}"
-        end
+        # one pair options:
+        # - 1 J not in a pair - three of a kind - add to pair
+        # - 2 J (the pair) - thre of a kind - add to one other card
+        self.class::THREE_OF_A_KIND
       else #self.class::HIGH_CARD
-        # all cards different, 1 J = becomes ONE_PAIR
+        # high card options
+        # - 1 J - add to another to becomes ONE_PAIR
         self.class::ONE_PAIR
       end
     end
